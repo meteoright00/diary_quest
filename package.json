@@ -1,6 +1,6 @@
 {
   "name": "diary-quest",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "RPG風日記アプリケーション",
   "scripts": {
