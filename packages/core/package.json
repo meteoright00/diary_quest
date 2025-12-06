@@ -1,0 +1,57 @@
+{
+  "name": "@diary-quest/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./character": {
+      "import": "./dist/character/index.js",
+      "types": "./dist/character/index.d.ts"
+    },
+    "./quest": {
+      "import": "./dist/quest/index.js",
+      "types": "./dist/quest/index.d.ts"
+    },
+    "./diary": {
+      "import": "./dist/diary/index.js",
+      "types": "./dist/diary/index.d.ts"
+    },
+    "./story/generator": {
+      "import": "./dist/story/generator.js",
+      "types": "./dist/story/generator.d.ts"
+    },
+    "./report/generator": {
+      "import": "./dist/report/generator.js",
+      "types": "./dist/report/generator.d.ts"
+    },
+    "./llm/manager": {
+      "import": "./dist/llm/manager.js",
+      "types": "./dist/llm/manager.d.ts"
+    },
+    "./llm": {
+      "import": "./dist/llm/index.js",
+      "types": "./dist/llm/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@diary-quest/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
