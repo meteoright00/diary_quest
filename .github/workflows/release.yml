@@ -58,15 +58,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - name: install frontend dependencies
-        run: pnpm install
-        # pnpm is not installed by default, so we might need to install it or use npm/yarn.
-        # Ideally use corepack enable.
-
       - name: install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 9
+
+      - name: install frontend dependencies
+        run: pnpm install
 
       - name: Build and Upload App
         uses: tauri-apps/tauri-action@v0
