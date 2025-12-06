@@ -66,6 +66,9 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install
 
+      - name: build packages
+        run: pnpm build
+
       - name: Build and Upload App
         uses: tauri-apps/tauri-action@v0
         env:
