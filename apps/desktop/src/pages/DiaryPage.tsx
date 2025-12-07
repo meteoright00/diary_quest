@@ -47,7 +47,7 @@ export default function DiaryPage() {
   } | null>(null);
 
   const { createDiary, loadDiariesByCharacter } = useDiaryStore();
-  const { llmSettings, worldSettings, getLLMProviderConfig } = useSettingsStore();
+  const { worldSettings } = useSettingsStore();
   const { currentCharacter, saveCharacter } = useCharacterStore();
   const { quests, loadQuestsByCharacter, saveQuest } = useQuestStore();
 
