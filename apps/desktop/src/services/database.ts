@@ -119,6 +119,25 @@ class DatabaseService implements AsyncDatabaseAdapter {
         await this.recordMigration('006_add_story_metadata');
       }
 
+      // Migration 007: Add category to worlds
+      const migration007Applied = await this.isMigrationApplied('007_add_category_to_worlds');
+      if (!migration007Applied) {
+        console.log('Running migration: 007_add_category_to_worlds');
+        // We skip 007 logic effectively because 008 will overwrite it, but we record it to keep history consistent if needed.
+        // Or we can just run it, it might fail if table is totally broken, but 008 fixes all.
+        // Let's safe run it or just record it. Actually 008 is the fix.
+        await this.runMigration007();
+        await this.recordMigration('007_add_category_to_worlds');
+      }
+
+      // Migration 008: Fix worlds table schema (Recreate)
+      const migration008Applied = await this.isMigrationApplied('008_fix_worlds_schema_recreate');
+      if (!migration008Applied) {
+        console.log('Running migration: 008_fix_worlds_schema_recreate');
+        await this.runMigration008();
+        await this.recordMigration('008_fix_worlds_schema_recreate');
+      }
+
       console.log('All migrations completed');
     } catch (error) {
       console.error('Migration error:', error);
@@ -290,6 +309,50 @@ class DatabaseService implements AsyncDatabaseAdapter {
     `;
 
     await this.execute(migration006.trim());
+  }
+
+  /**
+   * Run migration 007: Add category column to worlds table
+   */
+  private async runMigration007(): Promise<void> {
+    const migration007 = `
+      -- Add category column to worlds table
+      ALTER TABLE worlds ADD COLUMN category TEXT NOT NULL DEFAULT 'fantasy';
+    `;
+
+    await this.execute(migration007.trim());
+  }
+
+  /**
+   * Run migration 008: Recreate worlds table with correct schema
+   */
+  private async runMigration008(): Promise<void> {
+    const migration008 = `
+      -- Drop old worlds table
+      DROP TABLE IF EXISTS worlds;
+
+      -- Recreate worlds table with correct schema including settings_file_path and data
+      CREATE TABLE worlds (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        category TEXT NOT NULL,
+        settings_file_path TEXT NOT NULL,
+        data TEXT NOT NULL,
+        is_built_in INTEGER NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL
+      );
+      
+      -- Add indexes
+      CREATE INDEX IF NOT EXISTS idx_worlds_category ON worlds(category);
+      CREATE INDEX IF NOT EXISTS idx_worlds_builtin ON worlds(is_built_in);
+    `;
+
+    // Process one by one
+    const statements = migration008.split(';').filter(s => s.trim());
+    for (const statement of statements) {
+      await this.execute(statement);
+    }
   }
 
   /**

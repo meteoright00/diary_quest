@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useCharacterStore } from '@/store/characterStore';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useWorldStore } from '@/store/worldStore';
 import { CharacterManager, ExpCalculator } from '@diary-quest/core/character';
 import { OpenAIProvider, ClaudeProvider, GeminiProvider } from '@diary-quest/core/llm';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -17,6 +18,7 @@ interface CharacterPageProps {
 export default function CharacterPage({ onNavigate }: CharacterPageProps = {}) {
   const { currentCharacter, characters, isLoading, loadCharacters, createCharacter, setCurrentCharacter, saveCharacter } = useCharacterStore();
   const { worldSettings, llmSettings, getLLMProviderConfig } = useSettingsStore();
+  const { currentWorld, initializeWorld } = useWorldStore();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showCustomClassModal, setShowCustomClassModal] = useState(false);
   const [customClasses, setCustomClasses] = useState<CharacterClass[]>([]);
@@ -324,11 +326,28 @@ export default function CharacterPage({ onNavigate }: CharacterPageProps = {}) {
     }
 
     try {
+      // Ensure world exists in DB before creating character
+      // If we came from WelcomePage, it should be initialized.
+      // But if we reloaded, we might need to rely on what's in store or re-initialize.
+      let targetWorldId = currentWorld?.id;
+
+      if (!targetWorldId && worldSettings) {
+        // Fallback: try to initialize/find world based on current settings
+        // This handles page reload cases where worldStore might be empty but settings persist
+        const world = await initializeWorld(worldSettings);
+        targetWorldId = world.id;
+      }
+
+      if (!targetWorldId) {
+        alert('世界観設定が見つかりません。設定画面またはトップページから世界観を選択してください。');
+        return;
+      }
+
       const manager = new CharacterManager();
       const character = manager.createCharacter({
         name: formData.name,
         characterClass: formData.class,
-        worldId: worldSettings?.worldInfo.name || 'default_world',
+        worldId: targetWorldId,
       });
 
       await createCharacter(character);
@@ -337,7 +356,7 @@ export default function CharacterPage({ onNavigate }: CharacterPageProps = {}) {
       alert('キャラクターを作成しました！');
     } catch (error) {
       console.error('Failed to create character:', error);
-      alert('キャラクターの作成に失敗しました');
+      alert('キャラクターの作成に失敗しました: ' + (error instanceof Error ? error.message : String(error)));
     }
   };
 

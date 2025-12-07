@@ -4,7 +4,6 @@ import { useDiaryStore } from '@/store/diaryStore';
 import { useQuestStore } from '@/store/questStore';
 import { useReportStore } from '@/store/reportStore';
 import { ReportGenerator } from '@diary-quest/core/report/generator';
-import { ExpCalculator } from '@diary-quest/core/character';
 import { getLLMManager, isLLMInitialized } from '@/services/llm';
 import { useSettingsStore } from '@/store/settingsStore';
 import type { Report } from '@diary-quest/core/types';
@@ -120,13 +119,13 @@ export default function ReportsPage() {
         return diaryDate >= start && diaryDate <= end;
       });
 
-      // Filter quests in period (completed during period)
+      // Filter quests in period (created before end of period)
       const questsInPeriod = quests.filter((quest) => {
-        if (quest.status !== 'completed' || !quest.completedAt) return false;
-        const completedDate = new Date(quest.completedAt);
-        const start = new Date(formData.startDate);
+        const createdAt = new Date(quest.createdAt);
         const end = new Date(formData.endDate);
-        return completedDate >= start && completedDate <= end;
+        // Set end time to end of day to be inclusive
+        end.setHours(23, 59, 59, 999);
+        return createdAt <= end;
       });
 
       if (diariesInPeriod.length === 0) {
@@ -149,53 +148,9 @@ export default function ReportsPage() {
         character: currentCharacter,
       });
 
-      // Calculate level gains
-      const totalExpGained = report.characterGrowth.expGained;
-      const expCalculator = new ExpCalculator();
-
-      // Calculate current total EXP (sum of all EXP needed to reach current level + current EXP)
-      let currentTotalExp = currentCharacter.level.exp;
-      for (let i = 1; i < currentCharacter.level.current; i++) {
-        currentTotalExp += expCalculator.calculateExpForNextLevel(i);
-      }
-
-      // Calculate start-of-period total EXP
-      const startOfPeriodTotalExp = currentTotalExp - totalExpGained;
-
-      // Calculate start-of-period level
-      let startLevel = 1;
-      let expForStartLevel = 0;
-      while (expForStartLevel < startOfPeriodTotalExp) {
-        const expForNextLevel = expCalculator.calculateExpForNextLevel(startLevel);
-        if (expForStartLevel + expForNextLevel <= startOfPeriodTotalExp) {
-          expForStartLevel += expForNextLevel;
-          startLevel++;
-        } else {
-          break;
-        }
-      }
-
-      // Calculate end-of-period level (should match current level)
-      let endLevel = startLevel;
-      let expForEndLevel = startOfPeriodTotalExp - expForStartLevel;
-      let remainingExp = totalExpGained;
-
-      while (remainingExp > 0 && endLevel < 100) {
-        const expForNextLevel = expCalculator.calculateExpForNextLevel(endLevel);
-        const expNeeded = expForNextLevel - expForEndLevel;
-
-        if (remainingExp >= expNeeded) {
-          remainingExp -= expNeeded;
-          endLevel++;
-          expForEndLevel = 0;
-        } else {
-          expForEndLevel += remainingExp;
-          remainingExp = 0;
-        }
-      }
-
-      const levelsGained = endLevel - startLevel;
-      report.characterGrowth.levelsGained = levelsGained;
+      // Level gains are now calculated in ReportGenerator
+      // const totalExpGained = report.characterGrowth.expGained;
+      // ...
 
       // Update quest chart data
       report.charts.questProgress.datasets[0].data = [
@@ -300,11 +255,10 @@ export default function ReportsPage() {
                 <button
                   key={type}
                   onClick={() => handleTypeChange(type)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    formData.type === type
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${formData.type === type
                       ? 'bg-amber-600 text-white'
                       : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }`}
+                    }`}
                 >
                   {getReportTypeLabel(type)}
                 </button>

@@ -28,47 +28,49 @@ export function useAppInitialize() {
         console.log('Database initialized');
 
         // Ensure default world exists
-        console.log('Ensuring default world exists...');
-        await db.execute(
-          `INSERT OR IGNORE INTO worlds (id, created_at, updated_at, name, description, genre, setting, tone, rules)
-           VALUES (?, datetime('now'), datetime('now'), ?, ?, ?, ?, ?, ?)`,
-          [
-            'world_temp',
-            'デフォルトワールド',
-            '剣と魔法のファンタジー世界',
-            'fantasy',
-            '中世ファンタジー',
-            'epic',
-            '{"magic": true, "level_system": true}'
-          ]
-        );
-        console.log('Default world ensured');
+        // NOTE: This legacy logic is removed because it conflicts with the new worlds table schema.
+        // The WelcomePage handles world creation/selection now.
+        // console.log('Ensuring default world exists...');
+        // await db.execute(
+        //   `INSERT OR IGNORE INTO worlds (id, created_at, updated_at, name, description, genre, setting, tone, rules)
+        //    VALUES (?, datetime('now'), datetime('now'), ?, ?, ?, ?, ?, ?)`,
+        //   [
+        //     'world_temp',
+        //     'デフォルトワールド',
+        //     '剣と魔法のファンタジー世界',
+        //     'fantasy',
+        //     '中世ファンタジー',
+        //     'epic',
+        //     '{"magic": true, "level_system": true}'
+        //   ]
+        // );
+        // console.log('Default world ensured');
 
         // Load initial data
         console.log('Loading initial data...');
-        
+
         // Import store functions dynamically to avoid circular dependencies
         const { useCharacterStore } = await import('@/store/characterStore');
         const { useDiaryStore } = await import('@/store/diaryStore');
         const { useQuestStore } = await import('@/store/questStore');
         const { useReportStore } = await import('@/store/reportStore');
         const { useStoryStore } = await import('@/store/storyStore');
-        
+
         // Load characters
         console.log('Loading characters...');
         await useCharacterStore.getState().loadCharacters();
-        
+
         // Get characters from store
         const characters = useCharacterStore.getState().characters;
-        
+
         if (characters.length > 0) {
           // Set the first character as current
           const firstCharacter = characters[0];
           console.log('Setting current character:', firstCharacter.id);
           useCharacterStore.getState().setCurrentCharacter(firstCharacter);
-          
+
           console.log('Loading data for current character:', firstCharacter.id);
-          
+
           // Load all character-related data
           await Promise.all([
             useDiaryStore.getState().loadDiariesByCharacter(firstCharacter.id),
@@ -76,7 +78,7 @@ export function useAppInitialize() {
             useReportStore.getState().loadReportsByCharacter(firstCharacter.id),
             useStoryStore.getState().loadStoriesByCharacter(firstCharacter.id),
           ]);
-          
+
           console.log('Character data loaded');
         } else {
           console.log('No character found, user needs to create one');

@@ -5,7 +5,7 @@ This document provides a comprehensive overview of the `diary_quest` project for
 
 ## 0. Critical Priority (最優先事項)
 
-*   **成果物は日本語で記載**: All artifacts (implementation plans, task lists, walkthroughs), documentation, and communication must be in **Japanese**.
+*   **成果物は日本語で記載**: すべての成果物（実装計画、タスク一覧、チュートリアル、文書、コミュニケーション）は日本語で記載してください。
 
 ## 1. Project Overview
 

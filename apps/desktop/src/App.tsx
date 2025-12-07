@@ -14,19 +14,48 @@ import { useAppInitialize } from './hooks/useAppInitialize';
 import { useSettingsStore } from './store/settingsStore';
 import { useCharacterStore } from './store/characterStore';
 import { notificationService } from './services/NotificationService';
+import { initializeLLMManager, isLLMInitialized } from './services/llm';
 
 type Page = 'welcome' | 'home' | 'diary' | 'pastDiaries' | 'character' | 'quests' | 'story' | 'reports' | 'settings';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('welcome');
   const { isInitializing, error } = useAppInitialize();
-  const { setIsFirstLaunch, llmSettings, worldSettings, loadSecureSettings } = useSettingsStore();
+  const { setIsFirstLaunch, llmSettings, worldSettings, loadSecureSettings, getLLMProviderConfig } = useSettingsStore();
   const { characters } = useCharacterStore();
 
   // Load secure settings (API key)
   useEffect(() => {
     loadSecureSettings();
   }, [loadSecureSettings]);
+
+  // Initialize LLM Manager when settings are available
+  useEffect(() => {
+    if (llmSettings && llmSettings.apiKey && !isLLMInitialized()) {
+      try {
+        const providerConfig = getLLMProviderConfig();
+        initializeLLMManager({
+          providers: [providerConfig],
+          defaultProvider: llmSettings.provider,
+          fallbackEnabled: false,
+          usageTracking: false,
+          features: {
+            diaryConversion: { provider: llmSettings.provider, model: llmSettings.model },
+            emotionAnalysis: { provider: llmSettings.provider, model: llmSettings.model },
+            storyGeneration: { provider: llmSettings.provider, model: llmSettings.model },
+            reportGeneration: { provider: llmSettings.provider, model: llmSettings.model },
+          },
+          costManagement: {
+            monthlyLimit: 100,
+            alertThreshold: 0.8,
+          },
+        });
+        console.log('LLM Manager initialized globally');
+      } catch (error) {
+        console.error('Failed to initialize LLM Manager:', error);
+      }
+    }
+  }, [llmSettings, getLLMProviderConfig]);
 
   // Initialize Notification Service
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCharacterStore } from '@/store/characterStore';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useWorldStore } from '@/store/worldStore';
 import { DEFAULT_WORLDS, WORLD_METADATA, WorldParser } from '@diary-quest/core';
 import { invoke } from '@tauri-apps/api/tauri';
 
@@ -16,6 +17,7 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
 
   const { characters } = useCharacterStore();
   const { llmSettings, worldSettings, setWorldSettings } = useSettingsStore();
+  const { initializeWorld } = useWorldStore();
 
   const hasWorldSettings = !!worldSettings;
   const hasCharacter = characters.length > 0;
@@ -35,11 +37,16 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
     }
   }, [worldSettings, selectedWorldId]);
 
-  const handleWorldSelect = (worldId: string) => {
+  const handleWorldSelect = async (worldId: string) => {
     setSelectedWorldId(worldId);
     // Save selected world to settings
     const worldKey = worldId as keyof typeof DEFAULT_WORLDS;
-    setWorldSettings(DEFAULT_WORLDS[worldKey]);
+    const settings = DEFAULT_WORLDS[worldKey];
+    setWorldSettings(settings);
+
+    // Initialize world in DB to ensure it exists for FK
+    await initializeWorld(settings, worldId);
+
     setIsEditingWorld(false);
   };
 
@@ -74,6 +81,16 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
       // Save to settings
       setWorldSettings(worldSettings);
       setSelectedWorldId('custom');
+
+      // Initialize custom world in DB
+      // We don't have a stable ID for custom worlds from file unless generated or stored in file
+      // For now generate a new one or use 'custom' if singular
+      // Better to let generateId() handle it in store, but we need to track it?
+      // For simplicity, just let store generate an ID if we don't pass one, 
+      // BUT we need to pass it to CharacterPage later?
+      // Actually `initializeWorld` updates `currentWorld` in store, so we can check that.
+      await initializeWorld(worldSettings);
+
       setIsEditingWorld(false);
 
       alert('カスタム世界観を読み込みました！');
@@ -109,9 +126,8 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
       <div className="space-y-4 mb-8">
         {/* Step 0: World Selection */}
         <div
-          className={`bg-gray-800 rounded-lg p-6 border-2 ${
-            hasWorldSettings ? 'border-green-500' : 'border-gray-600'
-          }`}
+          className={`bg-gray-800 rounded-lg p-6 border-2 ${hasWorldSettings ? 'border-green-500' : 'border-gray-600'
+            }`}
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -150,11 +166,10 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
                   <button
                     key={world.id}
                     onClick={() => handleWorldSelect(world.id)}
-                    className={`p-4 rounded-lg border-2 transition-all text-left ${
-                      selectedWorldId === world.id
+                    className={`p-4 rounded-lg border-2 transition-all text-left ${selectedWorldId === world.id
                         ? 'border-amber-500 bg-amber-900/30'
                         : 'border-gray-600 bg-gray-700/30 hover:border-gray-500'
-                    }`}
+                      }`}
                   >
                     <div className="text-4xl mb-2">{world.icon}</div>
                     <h4 className="font-bold text-lg mb-1">{world.name}</h4>
@@ -196,9 +211,8 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
 
         {/* Step 1: Character Creation */}
         <div
-          className={`bg-gray-800 rounded-lg p-6 border-2 ${
-            hasCharacter ? 'border-green-500' : !hasWorldSettings ? 'border-gray-700' : 'border-gray-600'
-          } ${!hasWorldSettings ? 'opacity-50' : ''}`}
+          className={`bg-gray-800 rounded-lg p-6 border-2 ${hasCharacter ? 'border-green-500' : !hasWorldSettings ? 'border-gray-700' : 'border-gray-600'
+            } ${!hasWorldSettings ? 'opacity-50' : ''}`}
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -235,9 +249,8 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
 
         {/* Step 2: LLM Settings */}
         <div
-          className={`bg-gray-800 rounded-lg p-6 border-2 ${
-            hasLLMSettings ? 'border-green-500' : 'border-gray-600'
-          }`}
+          className={`bg-gray-800 rounded-lg p-6 border-2 ${hasLLMSettings ? 'border-green-500' : 'border-gray-600'
+            }`}
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">

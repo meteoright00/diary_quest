@@ -7,3 +7,4 @@ export { diaryRepository } from './diaryRepository';
 export { questRepository } from './questRepository';
 export { storyRepository } from './storyRepository';
 export { reportRepository } from './reportRepository';
+export { worldRepository } from './worldRepository';

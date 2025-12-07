@@ -6,7 +6,7 @@ import { useDiaryStore } from '@/store';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useCharacterStore } from '@/store/characterStore';
 import { useQuestStore } from '@/store/questStore';
-import { getDiaryConverter, initializeLLMManager, isLLMInitialized, getLLMManager } from '@/services/llm';
+import { getDiaryConverter, isLLMInitialized, getLLMManager } from '@/services/llm';
 import { CharacterManager } from '@diary-quest/core/character';
 import { QuestManager } from '@diary-quest/core/quest';
 import { EmotionAnalyzer } from '@diary-quest/core/diary';
@@ -65,32 +65,7 @@ export default function DiaryPage() {
     },
   });
 
-  // Initialize LLM Manager when settings are available
-  useEffect(() => {
-    if (llmSettings && llmSettings.apiKey && !isLLMInitialized()) {
-      try {
-        const providerConfig = getLLMProviderConfig();
-        initializeLLMManager({
-          providers: [providerConfig],
-          defaultProvider: llmSettings.provider,
-          fallbackEnabled: false,
-          usageTracking: false,
-          features: {
-            diaryConversion: { provider: llmSettings.provider, model: llmSettings.model },
-            emotionAnalysis: { provider: llmSettings.provider, model: llmSettings.model },
-            storyGeneration: { provider: llmSettings.provider, model: llmSettings.model },
-            reportGeneration: { provider: llmSettings.provider, model: llmSettings.model },
-          },
-          costManagement: {
-            monthlyLimit: 100,
-            alertThreshold: 0.8,
-          },
-        });
-      } catch (error) {
-        console.error('Failed to initialize LLM Manager:', error);
-      }
-    }
-  }, [llmSettings, getLLMProviderConfig]);
+
 
   // Load recent diaries and quests when page is opened or character changes
   useEffect(() => {
