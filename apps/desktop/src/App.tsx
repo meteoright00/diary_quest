@@ -14,7 +14,7 @@ import { useAppInitialize } from './hooks/useAppInitialize';
 import { useSettingsStore } from './store/settingsStore';
 import { useCharacterStore } from './store/characterStore';
 import { notificationService } from './services/NotificationService';
-import { initializeLLMManager, isLLMInitialized } from './services/llm';
+import { initializeLLMManager } from './services/llm';
 
 type Page = 'welcome' | 'home' | 'diary' | 'pastDiaries' | 'character' | 'quests' | 'story' | 'reports' | 'settings';
 
