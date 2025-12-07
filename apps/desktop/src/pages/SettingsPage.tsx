@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
 import { LLMManager, LLMConfig } from '@diary-quest/core';
 import { toast } from 'sonner';
-import { checkUpdate, installUpdate, type UpdateManifest } from '@tauri-apps/api/updater';
-import { relaunch } from '@tauri-apps/api/process';
-import { getVersion } from '@tauri-apps/api/app';
+import { checkUpdate, installUpdate, selectMarkdownFile, readWorldSettings } from '@/lib/tauri';
+import { type UpdateManifest } from '@tauri-apps/api/updater';
+import { relaunch } from '@/lib/tauri';
+import { getVersion } from '@/lib/tauri';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,16 +33,19 @@ const RECOMMENDED_MODELS: Record<string, { id: string; name: string; description
     { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: '超長文コンテキスト対応' },
     { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: '高速・低コスト' },
   ],
+  mock: [
+    { id: 'mock-model', name: 'Mock Model', description: 'テスト用ダミーモデル' },
+  ],
 };
 
 export default function SettingsPage() {
   const { llmSettings, worldSettings, appSettings, setLLMSettings, setWorldSettings, setAppSettings } = useSettingsStore();
   const [formData, setFormData] = useState<{
-    provider: 'openai' | 'claude' | 'gemini';
+    provider: 'openai' | 'claude' | 'gemini' | 'mock';
     apiKey: string;
     model: string;
   }>({
-    provider: (llmSettings?.provider as 'openai' | 'claude' | 'gemini') || 'openai',
+    provider: (llmSettings?.provider as 'openai' | 'claude' | 'gemini' | 'mock') || 'openai',
     apiKey: llmSettings?.apiKey || '',
     model: llmSettings?.model || 'gpt-5',
   });
@@ -89,8 +93,8 @@ export default function SettingsPage() {
 
     if (name === 'provider') {
       // When provider changes, set default model
-      const defaultModel = RECOMMENDED_MODELS[value]?.[0]?.id || '';
-      setFormData(prev => ({ ...prev, provider: value as 'openai' | 'claude' | 'gemini', model: defaultModel }));
+      const defaultModel = RECOMMENDED_MODELS[value]?.[0]?.id || (value === 'mock' ? 'mock-model' : '');
+      setFormData(prev => ({ ...prev, provider: value as 'openai' | 'claude' | 'gemini' | 'mock', model: defaultModel }));
     } else if (name === 'modelSelect') {
       if (value === 'other') {
         // Keep current model or clear it? Let's clear it to force entry
@@ -193,17 +197,9 @@ export default function SettingsPage() {
 
   const handleLoadWorldFile = async () => {
     try {
-      const { open } = await import('@tauri-apps/api/dialog');
-      const selected = await open({
-        filters: [{
-          name: 'Markdown',
-          extensions: ['md']
-        }],
-        multiple: false,
-      });
+      const selected = await selectMarkdownFile();
 
       if (selected && typeof selected === 'string') {
-        const { readWorldSettings } = await import('@/lib/tauri');
         const content = await readWorldSettings(selected);
 
         setWorldFilePath(selected);
@@ -460,7 +456,10 @@ export default function SettingsPage() {
               >
                 <option value="openai">OpenAI</option>
                 <option value="claude">Anthropic Claude</option>
+                <option value="openai">OpenAI</option>
+                <option value="claude">Anthropic Claude</option>
                 <option value="gemini">Google Gemini</option>
+                <option value="mock">Mock</option>
               </select>
             </div>
 

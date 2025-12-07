@@ -6,6 +6,7 @@ import type { LLMProvider, LLMConfig, LLMGenerateOptions, LLMResponse } from '..
 import { OpenAIProvider } from './providers/openai';
 import { ClaudeProvider } from './providers/claude';
 import { GeminiProvider } from './providers/gemini';
+import { MockLLMProvider } from './providers/mock';
 
 export class LLMManager {
   private providers: Map<string, LLMProvider> = new Map();
@@ -34,6 +35,9 @@ export class LLMManager {
           break;
         case 'gemini':
           provider = new GeminiProvider(providerConfig);
+          break;
+        case 'mock':
+          provider = new MockLLMProvider(providerConfig);
           break;
         default:
           console.warn(`Unknown provider: ${providerConfig.id}`);

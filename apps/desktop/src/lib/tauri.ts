@@ -61,3 +61,92 @@ export async function message(content: string, options?: any): Promise<void> {
   }
   return dialog.message(content, options);
 }
+
+/**
+ * Select world file
+ */
+export async function selectWorldFile(): Promise<string | null> {
+  if (!isTauri()) {
+    const confirmed = window.confirm('Mock: Select world file? (OK to use dummy, Cancel to cancel)');
+    if (!confirmed) return null;
+    return `# 世界観: テストワールド\n\nこれはモックでロードされた世界観です。`;
+  }
+  return invoke<string | null>('select_world_file');
+}
+
+/**
+ * Select markdown file
+ */
+export async function selectMarkdownFile(): Promise<string | null> {
+  if (!isTauri()) {
+    const confirmed = window.confirm('Mock: Select markdown file? (OK to use dummy, Cancel to cancel)');
+    if (!confirmed) return null;
+    return `file:///mock/path/to/file.md`;
+  }
+
+  try {
+    const { open } = await import('@tauri-apps/api/dialog');
+    const selected = await open({
+      filters: [{
+        name: 'Markdown',
+        extensions: ['md']
+      }],
+      multiple: false,
+    });
+
+    if (selected && typeof selected === 'string') {
+      return selected;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return null;
+}
+
+/**
+ * Get app version
+ */
+export async function getVersion(): Promise<string> {
+  if (!isTauri()) {
+    return '0.1.0-mock';
+  }
+  const { getVersion: getTauriVersion } = await import('@tauri-apps/api/app');
+  return getTauriVersion();
+}
+
+/**
+ * Check for updates
+ */
+export async function checkUpdate(): Promise<any> {
+  if (!isTauri()) {
+    console.log('Mock checkUpdate');
+    return { shouldUpdate: false };
+  }
+  const { checkUpdate: tauriCheckUpdate } = await import('@tauri-apps/api/updater');
+  return tauriCheckUpdate();
+}
+
+/**
+ * Install update
+ */
+export async function installUpdate(): Promise<void> {
+  if (!isTauri()) {
+    console.log('Mock installUpdate');
+    return;
+  }
+  const { installUpdate: tauriInstallUpdate } = await import('@tauri-apps/api/updater');
+  return tauriInstallUpdate();
+}
+
+/**
+ * Relaunch application
+ */
+export async function relaunch(): Promise<void> {
+  if (!isTauri()) {
+    console.log('Mock relaunch');
+    window.location.reload();
+    return;
+  }
+  const { relaunch: tauriRelaunch } = await import('@tauri-apps/api/process');
+  return tauriRelaunch();
+}

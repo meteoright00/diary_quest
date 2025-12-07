@@ -31,7 +31,7 @@ function App() {
 
   // Initialize LLM Manager when settings are available
   useEffect(() => {
-    if (llmSettings && llmSettings.apiKey && !isLLMInitialized()) {
+    if (llmSettings && llmSettings.apiKey) {
       try {
         const providerConfig = getLLMProviderConfig();
         initializeLLMManager({
@@ -65,6 +65,9 @@ function App() {
 
   // Handle Window Close Request (Minimize to Tray)
   useEffect(() => {
+    // Skip if not in Tauri
+    if (typeof window === 'undefined' || !('__TAURI_IPC__' in window)) return;
+
     const unlisten = appWindow.onCloseRequested(async (event) => {
       const { appSettings } = useSettingsStore.getState();
       if (appSettings.minimizeToTray) {

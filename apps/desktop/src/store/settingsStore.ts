@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { ProviderConfig, WorldSettings, ModelConfig } from '@diary-quest/core/types';
 
 interface LLMSettings {
-  provider: 'openai' | 'claude' | 'gemini';
+  provider: 'openai' | 'claude' | 'gemini' | 'mock';
   apiKey: string;
   model: string;
   temperature: number;

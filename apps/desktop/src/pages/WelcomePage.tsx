@@ -4,7 +4,7 @@ import { useCharacterStore } from '@/store/characterStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useWorldStore } from '@/store/worldStore';
 import { DEFAULT_WORLDS, WORLD_METADATA, WorldParser } from '@diary-quest/core';
-import { invoke } from '@tauri-apps/api/tauri';
+import { selectWorldFile } from '@/lib/tauri';
 
 interface WelcomePageProps {
   onComplete: () => void;
@@ -60,7 +60,7 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
       setIsUploadingCustomWorld(true);
 
       // Open file dialog and read MD file
-      const fileContent = await invoke<string | null>('select_world_file');
+      const fileContent = await selectWorldFile();
 
       if (!fileContent) {
         // User cancelled

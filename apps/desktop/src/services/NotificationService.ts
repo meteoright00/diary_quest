@@ -40,6 +40,11 @@ class NotificationService {
     }
 
     private async checkPermission(): Promise<boolean> {
+        if (!('__TAURI_IPC__' in window)) {
+            console.log('Mock checkPermission: granted');
+            return true;
+        }
+
         let permissionGranted = await isPermissionGranted();
         if (!permissionGranted) {
             const permission = await requestPermission();
@@ -95,6 +100,11 @@ class NotificationService {
             body = 'ログの更新時刻です。本日の観測データを入力してください。';
         } else if (textLower.includes('detective') || textLower.includes('mystery') || textLower.includes('探偵') || textLower.includes('事件')) {
             body = '今日の一日を振り返ろう。事件の手がかりが見つかるかもしれない。';
+        }
+
+        if (!('__TAURI_IPC__' in window)) {
+            console.log('Mock Notification:', title, body);
+            return;
         }
 
         sendNotification({

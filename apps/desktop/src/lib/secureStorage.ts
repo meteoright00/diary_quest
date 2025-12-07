@@ -20,6 +20,13 @@ async function ensureConfigDir(): Promise<void> {
  */
 export async function saveApiKey(apiKey: string): Promise<void> {
     try {
+        if (typeof window !== 'undefined' && !('__TAURI_IPC__' in window)) {
+            // Mock mode: save to localStorage
+            const secrets: Secrets = { apiKey };
+            localStorage.setItem('dq_secrets', JSON.stringify(secrets));
+            return;
+        }
+
         await ensureConfigDir();
 
         // Load existing secrets to preserve other data if any
@@ -47,6 +54,16 @@ export async function saveApiKey(apiKey: string): Promise<void> {
  */
 export async function loadApiKey(): Promise<string | null> {
     try {
+        if (typeof window !== 'undefined' && !('__TAURI_IPC__' in window)) {
+            // Mock mode: load from localStorage
+            const content = localStorage.getItem('dq_secrets');
+            if (content) {
+                const secrets: Secrets = JSON.parse(content);
+                return secrets.apiKey || null;
+            }
+            return null;
+        }
+
         if (!(await exists(SECRETS_FILE, { dir: BaseDirectory.AppConfig }))) {
             return null;
         }
