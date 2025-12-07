@@ -68,3 +68,14 @@ diary_questは、あなたの日常をファンタジー世界の冒険譚に変
 安心してあなただけの冒険を記録してください。
 
 ---
+
+## 🤝 コントリビューション
+
+現在、本プロジェクトは個人開発としての運用を重視しているため、**Pull Request（コードの変更提案）は受け付けておりません**。
+バグ報告や機能要望については、[Issues](https://github.com/meteoright00/diary_quest/issues) にてお待ちしております。
+
+詳しくは [CONTRIBUTING.md](./CONTRIBUTING.md) をご覧ください。
+
+## 📄 ライセンス
+
+このプロジェクトは [MIT License](./LICENSE) のもとで公開されています。

@@ -1,0 +1,38 @@
+name: Auto Close Pull Requests
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  auto-close:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close Pull Request
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const user = context.payload.pull_request.user.login;
+            const body = `
+            @${user} 様、Pull Request を作成いただきありがとうございます！
+            
+            申し訳ありませんが、現在このリポジトリでは [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) に記載の通り、Pull Request を受け付けておりません。
+            いただいた PR は自動的にクローズさせていただきますが、内容は確認させていただきます。
+            
+            バグ報告や機能提案などがございましたら、ぜひ Issues にてお知らせいただければ幸いです。
+            ご理解のほど、よろしくお願いいたします。
+            `;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+            
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              state: 'closed'
+            });
