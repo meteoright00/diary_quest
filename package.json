@@ -8,10 +8,7 @@
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "eslint . --ext .ts,.tsx",
-    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
-    "release": "node scripts/release.mjs",
-    "release:minor": "node scripts/release.mjs minor",
-    "release:major": "node scripts/release.mjs major"
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\""
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

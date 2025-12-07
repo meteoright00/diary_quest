@@ -93,6 +93,14 @@
         "minWidth": 800,
         "minHeight": 600
       }
-    ]
+    ],
+    "updater": {
+      "active": true,
+      "dialog": true,
+      "endpoints": [
+        "https://github.com/meteoright00/diary_quest/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI2QzhFQUNFRUFBNTU0QTcKUldTblZLWHF6dXJJSmxKbE80eTZXNC9iOS9uNFVsZG5wVEhFenNnTEZqRmwxclhUSVZnSkhsVDUK"
+    }
   }
 }

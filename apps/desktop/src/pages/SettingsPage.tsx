@@ -2,6 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
 import { LLMManager, LLMConfig } from '@diary-quest/core';
 import { message } from '@/lib/tauri';
+import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
+import { relaunch } from '@tauri-apps/api/process';
+import { getVersion } from '@tauri-apps/api/app';
+import { confirm } from '@tauri-apps/api/dialog';
 
 const RECOMMENDED_MODELS: Record<string, { id: string; name: string; description: string }[]> = {
   openai: [
@@ -39,6 +43,8 @@ export default function SettingsPage() {
   const [notificationTime, setNotificationTime] = useState('20:00');
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [testMessage, setTestMessage] = useState('');
+  const [appVersion, setAppVersion] = useState<string>('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Load settings on mount
   useEffect(() => {
@@ -49,6 +55,8 @@ export default function SettingsPage() {
       setNotificationEnabled(appSettings.enableNotifications);
       setNotificationTime(appSettings.notificationTime);
     }
+    // Get app version
+    getVersion().then(setAppVersion).catch(console.error);
   }, [worldSettings, appSettings]);
 
   // Check if form has unsaved changes
@@ -260,6 +268,33 @@ export default function SettingsPage() {
     }
   };
 
+  const handleCheckForUpdates = async () => {
+    setIsUpdating(true);
+    try {
+      const { shouldUpdate, manifest } = await checkUpdate();
+
+      if (shouldUpdate && manifest) {
+        const confirmed = await confirm(
+          `新しいバージョン ${manifest.version} が利用可能です。\n\nリリースノート:\n${manifest.body}\n\n今すぐ更新しますか？`,
+          { title: 'アップデート確認', type: 'info' }
+        );
+
+        if (confirmed) {
+          await message('バックグラウンドでアップデートをダウンロード・インストールします。完了後、自動的に再起動します。', { title: 'アップデート開始', type: 'info' });
+          await installUpdate();
+          await relaunch();
+        }
+      } else {
+        await message(`お使いのバージョン (${appVersion}) は最新です。`, { title: '最新です', type: 'info' });
+      }
+    } catch (error) {
+      console.error('Update check failed:', error);
+      await message(`アップデートの確認に失敗しました: ${error instanceof Error ? error.message : String(error)}`, { title: 'エラー', type: 'error' });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Helper for render
   const currentProviderModels = RECOMMENDED_MODELS[formData.provider] || [];
   const isKnownModel = currentProviderModels.some(m => m.id === formData.model);
@@ -310,6 +345,36 @@ export default function SettingsPage() {
                 />
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="bg-gray-800 rounded-lg p-6">
+          <h3 className="text-xl font-bold mb-4">アプリケーション情報</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-400">現在のバージョン</p>
+                <p className="text-lg font-mono">v{appVersion || '...'}</p>
+              </div>
+              <button
+                onClick={handleCheckForUpdates}
+                disabled={isUpdating}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors text-sm flex items-center gap-2"
+              >
+                {isUpdating ? (
+                  <>
+                    <span className="animate-spin">⏳</span> 確認中...
+                  </>
+                ) : (
+                  <>
+                    <span>🔄</span> アップデートを確認
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              ※アップデートにはインターネット接続が必要です。
+            </p>
           </div>
         </div>
 

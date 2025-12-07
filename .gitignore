@@ -57,3 +57,9 @@ temp/
 # Other
 設計書/
 .turbo/
+
+# Developer Documentation (Private)
+GEMINI.md
+CLAUDE.md
+.mcp.json
+docs/UPDATER_SETUP.md
