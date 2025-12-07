@@ -19,35 +19,35 @@ export default function Header({ currentPage }: HeaderProps) {
 
   return (
     <>
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+      <header className="bg-transparent border-b border-white/5 px-8 py-5 relative z-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-amber-400">Diary Quest</h1>
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-magic-gold to-magic-orange drop-shadow-sm tracking-tight">Diary Quest</h1>
             <button
               onClick={() => setIsHelpOpen(true)}
-              className="flex items-center mt-1 text-gray-400 hover:text-amber-400 transition-colors"
+              className="flex items-center mt-1 text-slate-400 hover:text-magic-cyan transition-colors"
               title="このページについて"
             >
               <HelpCircle size={20} />
             </button>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Level</span>
-              <span className="font-bold text-green-400">
+          <div className="flex items-center gap-6 text-sm font-medium">
+            <div className="flex items-center gap-2 bg-midnight-900/30 px-3 py-1.5 rounded-full border border-white/5">
+              <span className="text-slate-400">Level</span>
+              <span className="text-magic-cyan font-bold text-base">
                 {currentCharacter?.level.current || 1}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">EXP</span>
-              <span className="font-bold text-blue-400">
-                {currentCharacter?.level.exp || 0} / {currentCharacter?.level.expToNextLevel || 100}
+            <div className="flex items-center gap-2 bg-midnight-900/30 px-3 py-1.5 rounded-full border border-white/5">
+              <span className="text-slate-400">EXP</span>
+              <span className="text-blue-300 font-mono">
+                {currentCharacter?.level.exp || 0} <span className="text-slate-600">/</span> {currentCharacter?.level.expToNextLevel || 100}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Gold</span>
-              <span className="font-bold text-yellow-400">
-                {currentCharacter?.currency.gold || 0}
+            <div className="flex items-center gap-2 bg-midnight-900/30 px-3 py-1.5 rounded-full border border-white/5">
+              <span className="text-slate-400">Gold</span>
+              <span className="text-magic-gold font-mono">
+                {currentCharacter?.currency.gold || 0} G
               </span>
             </div>
           </div>

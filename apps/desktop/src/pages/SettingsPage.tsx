@@ -1,11 +1,20 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
 import { LLMManager, LLMConfig } from '@diary-quest/core';
-import { message } from '@/lib/tauri';
-import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
+import { toast } from 'sonner';
+import { checkUpdate, installUpdate, type UpdateManifest } from '@tauri-apps/api/updater';
 import { relaunch } from '@tauri-apps/api/process';
 import { getVersion } from '@tauri-apps/api/app';
-import { confirm } from '@tauri-apps/api/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const RECOMMENDED_MODELS: Record<string, { id: string; name: string; description: string }[]> = {
   openai: [
@@ -45,6 +54,8 @@ export default function SettingsPage() {
   const [testMessage, setTestMessage] = useState('');
   const [appVersion, setAppVersion] = useState<string>('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showUpdateConfirm, setShowUpdateConfirm] = useState(false);
+  const [updateManifest, setUpdateManifest] = useState<UpdateManifest | null>(null);
 
   // Load settings on mount
   useEffect(() => {
@@ -95,11 +106,11 @@ export default function SettingsPage() {
   const handleSave = async () => {
     // Validate
     if (!formData.apiKey) {
-      await message('APIキーを入力してください', { title: 'エラー', type: 'error' });
+      toast.error('APIキーを入力してください');
       return;
     }
     if (!formData.model) {
-      await message('モデルを選択または入力してください', { title: 'エラー', type: 'error' });
+      toast.error('モデルを選択または入力してください');
       return;
     }
 
@@ -123,10 +134,10 @@ export default function SettingsPage() {
         minimizeToTray: minimizeToTray,
       });
 
-      await message('設定を保存しました', { title: '完了', type: 'info' });
+      toast.success('設定を保存しました');
     } catch (error) {
       console.error('Save error:', error);
-      await message('保存中にエラーが発生しました', { title: 'エラー', type: 'error' });
+      toast.error('保存中にエラーが発生しました');
     } finally {
       setIsSaving(false);
     }
@@ -260,11 +271,11 @@ export default function SettingsPage() {
           promptTemplate: '',
         });
 
-        await message('世界観ファイルを読み込みました', { title: '完了', type: 'info' });
+        toast.info('世界観ファイルを読み込みました');
       }
     } catch (error) {
       console.error('Load world file error:', error);
-      await message('ファイルの読み込みに失敗しました', { title: 'エラー', type: 'error' });
+      toast.error('ファイルの読み込みに失敗しました');
     }
   };
 
@@ -274,24 +285,31 @@ export default function SettingsPage() {
       const { shouldUpdate, manifest } = await checkUpdate();
 
       if (shouldUpdate && manifest) {
-        const confirmed = await confirm(
-          `新しいバージョン ${manifest.version} が利用可能です。\n\nリリースノート:\n${manifest.body}\n\n今すぐ更新しますか？`,
-          { title: 'アップデート確認', type: 'info' }
-        );
-
-        if (confirmed) {
-          await message('バックグラウンドでアップデートをダウンロード・インストールします。完了後、自動的に再起動します。', { title: 'アップデート開始', type: 'info' });
-          await installUpdate();
-          await relaunch();
-        }
+        setUpdateManifest(manifest);
+        setShowUpdateConfirm(true);
       } else {
-        await message(`お使いのバージョン (${appVersion}) は最新です。`, { title: '最新です', type: 'info' });
+        toast.info(`お使いのバージョン (${appVersion}) は最新です。`);
       }
     } catch (error) {
       console.error('Update check failed:', error);
-      await message(`アップデートの確認に失敗しました: ${error instanceof Error ? error.message : String(error)}`, { title: 'エラー', type: 'error' });
+      toast.error(`アップデートの確認に失敗しました: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!updateManifest) return;
+
+    setShowUpdateConfirm(false);
+    toast.info('バックグラウンドでアップデートをダウンロード・インストールします。完了後、自動的に再起動します。');
+
+    try {
+      await installUpdate();
+      await relaunch();
+    } catch (error) {
+      console.error('Update install failed:', error);
+      toast.error('アップデートのインストールに失敗しました');
     }
   };
 
@@ -396,7 +414,7 @@ export default function SettingsPage() {
                     setNotificationEnabled(isChecked);
                     if (isChecked) {
                       // Show guidance when turning ON
-                      alert('アプリを閉じても通知を受け取るために、トレイに最小化されるようになります。');
+                      toast.info('アプリを閉じても通知を受け取るために、トレイに最小化されるようになります。');
                     }
                   }}
                   className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-transform duration-200 ease-in-out checked:translate-x-full checked:border-amber-500"
@@ -532,6 +550,30 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
-    </div>
+
+
+      <AlertDialog open={showUpdateConfirm} onOpenChange={setShowUpdateConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>アップデート確認</AlertDialogTitle>
+            <AlertDialogDescription>
+              新しいバージョン {updateManifest?.version} が利用可能です。<br />
+              <br />
+              <div className="max-h-32 overflow-y-auto bg-black/20 p-2 rounded text-xs whitespace-pre-wrap">
+                {updateManifest?.body}
+              </div>
+              <br />
+              今すぐ更新しますか？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUpdate}>
+              更新する
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div >
   );
 }

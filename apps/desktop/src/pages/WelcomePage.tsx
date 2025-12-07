@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useCharacterStore } from '@/store/characterStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useWorldStore } from '@/store/worldStore';
@@ -74,7 +75,7 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
       const validation = parser.validateSettings(worldSettings);
 
       if (!validation.valid) {
-        alert(`世界観ファイルのバリデーションエラー:\n${validation.errors.join('\n')}`);
+        toast.error(`世界観ファイルのバリデーションエラー:\n${validation.errors.join('\n')}`);
         return;
       }
 
@@ -93,11 +94,11 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
 
       setIsEditingWorld(false);
 
-      alert('カスタム世界観を読み込みました！');
+      toast.success('カスタム世界観を読み込みました！');
     } catch (error) {
       console.error('Failed to upload custom world:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      alert(`世界観ファイルの読み込みに失敗しました:\n${errorMessage}`);
+      toast.error(`世界観ファイルの読み込みに失敗しました:\n${errorMessage}`);
     } finally {
       setIsUploadingCustomWorld(false);
     }
@@ -167,8 +168,8 @@ export default function WelcomePage({ onComplete, onNavigate }: WelcomePageProps
                     key={world.id}
                     onClick={() => handleWorldSelect(world.id)}
                     className={`p-4 rounded-lg border-2 transition-all text-left ${selectedWorldId === world.id
-                        ? 'border-amber-500 bg-amber-900/30'
-                        : 'border-gray-600 bg-gray-700/30 hover:border-gray-500'
+                      ? 'border-amber-500 bg-amber-900/30'
+                      : 'border-gray-600 bg-gray-700/30 hover:border-gray-500'
                       }`}
                   >
                     <div className="text-4xl mb-2">{world.icon}</div>

@@ -43,32 +43,37 @@ export default function HomePage({ onNavigate }: HomePageProps) {
     return (
         <div className="max-w-6xl mx-auto space-y-8">
             {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700 shadow-2xl p-8">
+            <div className="relative overflow-hidden rounded-2xl glass-panel p-8 border-magic-cyan/30">
                 <div className="absolute top-0 right-0 p-8 opacity-10">
-                    <span className="text-9xl">🛡️</span>
+                    <span className="text-9xl filter blur-sm">🛡️</span>
                 </div>
 
+                {/* Background Ambient Glow - Removed for readability */}
+                {/* <div className="absolute -top-20 -right-20 w-96 h-96 bg-magic-cyan/10 rounded-full blur-3xl" /> */}
+                {/* <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-magic-purple/20 rounded-full blur-3xl" /> */}
+
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div className="flex items-center gap-6">
-                        <div className="text-6xl bg-slate-800 rounded-full p-4 border-4 border-amber-500/30 shadow-xl">
-                            🛡️
+                    <div className="flex items-center gap-8">
+                        <div className="text-6xl bg-midnight-900/80 rounded-full p-6 border-2 border-magic-gold/50 shadow-glow-gold relative group">
+                            <span className="relative z-10">🛡️</span>
+                            <div className="absolute inset-0 bg-magic-gold/20 rounded-full blur-md opacity-50 group-hover:opacity-80 transition-opacity" />
                         </div>
                         <div>
                             <div className="flex items-center gap-3 mb-2">
-                                <span className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm font-bold border border-amber-500/30">
+                                <span className="px-3 py-1 bg-magic-gold/10 text-magic-gold rounded-full text-sm font-bold border border-magic-gold/30 shadow-[0_0_10px_rgba(251,191,36,0.2)]">
                                     Lv.{currentCharacter.level.current}
                                 </span>
-                                <span className="text-slate-400">{currentCharacter.basicInfo.class}</span>
+                                <span className="text-slate-300 font-medium tracking-wide">{currentCharacter.basicInfo.class}</span>
                             </div>
-                            <h1 className="text-4xl font-bold text-white mb-2">{currentCharacter.basicInfo.name}</h1>
-                            <div className="flex items-center gap-4 text-slate-300">
-                                <div className="flex items-center gap-2">
+                            <h1 className="text-5xl font-bold text-white mb-3 drop-shadow-md tracking-tight">{currentCharacter.basicInfo.name}</h1>
+                            <div className="flex items-center gap-6 text-slate-300">
+                                <div className="flex items-center gap-2 bg-midnight-900/40 px-3 py-1.5 rounded-lg border border-white/5">
                                     <span>💰</span>
-                                    <span className="font-mono text-amber-400">{currentCharacter.currency.gold.toLocaleString()} G</span>
+                                    <span className="font-mono text-magic-gold text-lg">{currentCharacter.currency.gold.toLocaleString()} <span className="text-sm">G</span></span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 bg-midnight-900/40 px-3 py-1.5 rounded-lg border border-white/5">
                                     <span>💎</span>
-                                    <span className="font-mono text-blue-400">{currentCharacter.level.exp} / {expData?.nextLevelExp} EXP</span>
+                                    <span className="font-mono text-magic-cyan text-lg">{currentCharacter.level.exp} <span className="text-slate-500">/</span> {expData?.nextLevelExp} <span className="text-sm">EXP</span></span>
                                 </div>
                             </div>
                         </div>
@@ -76,66 +81,73 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 
                     <button
                         onClick={() => onNavigate('diary')}
-                        className="group relative px-8 py-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl font-bold text-lg shadow-lg transition-all hover:scale-105 active:scale-95"
+                        className="group relative px-10 py-5 bg-gradient-to-r from-magic-orange to-red-500 hover:from-orange-400 hover:to-red-400 text-white rounded-2xl font-bold text-xl shadow-glow-orange transition-all hover:scale-105 active:scale-95 border-t border-white/20"
                     >
-                        <div className="flex items-center gap-3">
-                            <span className="text-2xl">✍️</span>
-                            <span>冒険に出る（日記を書く）</span>
+                        <div className="flex items-center gap-3 relative z-10">
+                            <span className="text-2xl filter drop-shadow">✍️</span>
+                            <span className="drop-shadow-sm">冒険に出る（日記を書く）</span>
                         </div>
-                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-amber-500/50 blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {/* Shimmer Effect - Removed by user request */}
+                        {/* <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" /> */}
                     </button>
                 </div>
 
                 {/* EXP Bar */}
-                <div className="mt-8 relative h-4 bg-slate-900/50 rounded-full overflow-hidden border border-slate-700">
-                    <div
-                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-600 to-cyan-500 transition-all duration-1000 ease-out"
-                        style={{ width: `${expData?.progress}%` }}
-                    >
-                        <div className="absolute top-0 right-0 h-full w-full bg-gradient-to-b from-white/20 to-transparent" />
+                <div className="mt-10 relative">
+                    <div className="flex justify-between text-xs text-slate-400 mb-1 px-1">
+                        <span>Current EXP</span>
+                        <span>Next Level</span>
+                    </div>
+                    <div className="h-4 bg-midnight-900/60 rounded-full overflow-hidden border border-white/10 shadow-inner">
+                        <div
+                            className="absolute top-6 left-0 h-4 rounded-full bg-gradient-to-r from-blue-600 to-magic-cyan shadow-glow-cyan transition-all duration-1000 ease-out"
+                            style={{ width: `${expData?.progress}%` }}
+                        >
+                            <div className="absolute top-0 right-0 h-full w-full bg-gradient-to-b from-white/30 to-transparent" />
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Active Quests Widget */}
-                <div className="bg-slate-800 rounded-xl border border-slate-700 p-6 hover:border-slate-600 transition-colors">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold flex items-center gap-2">
-                            <span>📜</span> 進行中のクエスト
+                <div className="glass-panel p-6 rounded-2xl hover:border-magic-cyan/30 transition-colors group">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold flex items-center gap-2 text-white">
+                            <span className="text-2xl drop-shadow-glow">📜</span> 進行中のクエスト
                         </h2>
                         <button
                             onClick={() => onNavigate('quests')}
-                            className="text-sm text-slate-400 hover:text-white transition-colors"
+                            className="text-sm text-magic-cyan hover:text-cyan-300 transition-colors"
                         >
                             すべて見る →
                         </button>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {quests.length > 0 ? (
                             quests.slice(0, 3).map((quest: Quest) => (
-                                <div key={quest.id} className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className="font-bold text-slate-200">{quest.title}</h3>
-                                        <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded">
+                                <div key={quest.id} className="bg-midnight-900/40 p-4 rounded-xl border border-white/5 hover:border-magic-cyan/20 transition-colors">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h3 className="font-bold text-slate-100">{quest.title}</h3>
+                                        <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30">
                                             {quest.difficulty}
                                         </span>
                                     </div>
-                                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="w-full h-2 bg-midnight-900 rounded-full overflow-hidden border border-white/5">
                                         <div
-                                            className="h-full bg-green-500 transition-all"
+                                            className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all shadow-[0_0_8px_rgba(16,185,129,0.5)]"
                                             style={{ width: `${(quest.progress.current / quest.progress.target) * 100}%` }}
                                         />
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-8 text-slate-500">
-                                <p>進行中のクエストはありません</p>
+                            <div className="text-center py-10 text-slate-500 bg-midnight-900/20 rounded-xl border-2 border-dashed border-slate-700/50">
+                                <p className="mb-2">進行中のクエストはありません</p>
                                 <button
                                     onClick={() => onNavigate('quests')}
-                                    className="mt-2 text-amber-500 hover:text-amber-400 text-sm"
+                                    className="text-magic-gold hover:text-amber-300 font-medium"
                                 >
                                     クエストを受注する
                                 </button>
@@ -145,14 +157,14 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 </div>
 
                 {/* Recent Activity Widget */}
-                <div className="bg-slate-800 rounded-xl border border-slate-700 p-6 hover:border-slate-600 transition-colors">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold flex items-center gap-2">
-                            <span>📖</span> 最近の冒険
+                <div className="glass-panel p-6 rounded-2xl hover:border-magic-cyan/30 transition-colors group">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold flex items-center gap-2 text-white">
+                            <span className="text-2xl drop-shadow-glow">📖</span> 最近の冒険
                         </h2>
                         <button
                             onClick={() => onNavigate('pastDiaries')}
-                            className="text-sm text-slate-400 hover:text-white transition-colors"
+                            className="text-sm text-magic-cyan hover:text-cyan-300 transition-colors"
                         >
                             履歴を見る →
                         </button>
@@ -162,23 +174,23 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                         {recentDiaries.length > 0 ? (
                             recentDiaries.map((diary: Diary) => {
                                 return (
-                                    <div key={diary.id} className="flex items-center gap-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 hover:bg-slate-900 transition-colors cursor-pointer" onClick={() => onNavigate('pastDiaries')}>
-                                        <div className="text-2xl opacity-80">
+                                    <div key={diary.id} className="flex items-center gap-4 p-4 bg-midnight-900/40 rounded-xl border border-white/5 hover:bg-midnight-800/60 hover:border-magic-cyan/30 transition-all cursor-pointer group/item" onClick={() => onNavigate('pastDiaries')}>
+                                        <div className="text-3xl opacity-80 filter drop-shadow-md group-hover/item:scale-110 transition-transform">
                                             {diary.emotionAnalysis?.overallSentiment === 'positive' ? '☀️' :
                                                 diary.emotionAnalysis?.overallSentiment === 'negative' ? '🌧️' : '☁️'}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-bold text-slate-200 truncate">{getDiaryTitle(diary)}</h3>
+                                            <h3 className="font-bold text-slate-100 truncate group-hover/item:text-magic-cyan transition-colors">{getDiaryTitle(diary)}</h3>
                                             <p className="text-xs text-slate-400">{new Date(diary.date).toLocaleDateString()}</p>
                                         </div>
-                                        <div className="text-amber-500 text-sm font-mono">
+                                        <div className="text-magic-gold font-mono font-bold bg-magic-gold/10 px-2 py-1 rounded border border-magic-gold/20">
                                             +{diary.rewards.exp} EXP
                                         </div>
                                     </div>
                                 );
                             })
                         ) : (
-                            <div className="text-center py-8 text-slate-500">
+                            <div className="text-center py-10 text-slate-500 bg-midnight-900/20 rounded-xl border-2 border-dashed border-slate-700/50">
                                 <p>まだ冒険の記録がありません</p>
                             </div>
                         )}

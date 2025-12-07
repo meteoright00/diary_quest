@@ -11,6 +11,12 @@ import type { EmotionType } from '../types/diary';
 import { generateId } from '@diary-quest/shared';
 import { ExpCalculator } from '../character/exp-calculator';
 
+// Helper to parse YYYY-MM-DD string to local Date object at 00:00:00
+function parseDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export interface ReportGenerateOptions {
   type: Report['type'];
   startDate: string;
@@ -89,8 +95,8 @@ export class ReportGenerator {
       if (i === 0) {
         currentStreak = 1;
       } else {
-        const prevDate = new Date(sortedDiaries[i - 1].date);
-        const currDate = new Date(sortedDiaries[i].date);
+        const prevDate = parseDate(sortedDiaries[i - 1].date);
+        const currDate = parseDate(sortedDiaries[i].date);
         const diffDays = Math.floor(
           (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
         );
@@ -106,8 +112,8 @@ export class ReportGenerator {
     }
 
     // Calculate writing rate
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = parseDate(startDate);
+    const end = parseDate(endDate);
     const totalDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     const writingRate = totalDays > 0 ? Math.floor((totalCount / totalDays) * 100) : 0;
 
@@ -203,9 +209,6 @@ export class ReportGenerator {
   /**
    * Calculate character growth
    */
-  /**
-   * Calculate character growth
-   */
   private calculateCharacterGrowth(
     diaries: Diary[],
     character: Character
@@ -250,53 +253,7 @@ export class ReportGenerator {
       if (startLevel >= 99) break; // Safety break
     }
 
-    // Current level is simply character.level.current
-    // But we should verify if the expGained accounts for the difference
     const endLevel = character.level.current;
-
-    // Logic check: if we assume the character was at startLevel, does adding expGained get us to endLevel?
-    // The previous implementation in frontend was doing a forward simulation.
-    // Here we can simplify: levelsGained is simply endLevel - startLevel.
-    // However, this assumes ALL exp gained in the period came from diaries.
-    // If there are other sources (quests), we should account for them too if we want perfect accuracy,
-    // but the report is generated from filtered diaries/quests.
-    // We only have diaries here. To be accurate we should use the total exp gained from report's scope.
-
-    // Wait, `expGained` above is ONLY from diaries.
-    // But character.level is the CURRENT state.
-    // If the user gained EXP from Quests, that is NOT in `expGained` here.
-    // So `startOfPeriodTotalExp` calculation is wrong if we only subtract diary EXP.
-    // We should probably rely on what we can know.
-    // If this is a "Diary Report", maybe it's fine. 
-    // But the user reported "Correcting growth description errors".
-    // If I only subtract diary EXP, the startLevel will be too high (closer to current), so levelsGained will be too low.
-    // I should probably calculate `totalExpGained` including quests if possible?
-    // But I don't have quests here? I DO have quests in `generateReport`.
-    // BUT `calculateCharacterGrowth` signature I defined above only takes `diaries`.
-    // I should change it to take `quests` too if I want to be accurate.
-    // Actually, let's look at `generateReport`. It has `quests`. I can pass it.
-
-    // Let's defer this complexity and just use the logic I have for now, but I'll add a TODO or just fix it now.
-    // I will stick to the frontend logic which seemed to "work" but was buggy?
-    // The user said "growth description is incorrect".
-    // The frontend logic was: `const totalExpGained = report.characterGrowth.expGained;`
-    // And `report.characterGrowth.expGained` came from `this.calculateCharacterGrowth(diaries)`.
-    // So it ONLY counted diary EXP.
-    // That IS likely the bug.
-
-    // I will assume for now I will fix this by ONLY using the diary EXP for "Diary Report Stats",
-    // but for "Level Calculation", I really need the total delta.
-    // But maybe the report is only supposed to show "Growth from Diaring"?
-    // The prompt says "Growth... Exp Gained...".
-    // If the level jumped 5 times, but only 10 EXP came from diaries, saying "Level +5" might be confusing if we attribute it to diaries?
-    // BUT, the `levelsGained` field implies "How much did you grow during this period?".
-
-    // Let's stick to the Plan: "Move logic from component to here".
-    // I will use `expGained` calculated here (from diaries). 
-    // WARN: This might still be incorrect if Quests contribute to levels.
-    // BUT, `calculateCharacterGrowth` returns `Report['characterGrowth']` which has `expGained`.
-    // I should probably accept `totalExpFromPeriod` as an argument or calculate it here.
-
     const levelsGained = Math.max(0, character.level.current - startLevel);
 
     return {
@@ -311,15 +268,12 @@ export class ReportGenerator {
   /**
    * Calculate quest statistics
    */
-  /**
-   * Calculate quest statistics
-   */
   private calculateQuestStats(
     quests: Quest[],
     startDate: string,
     endDate: string
   ): Report['questStats'] {
-    const end = new Date(endDate);
+    const end = parseDate(endDate);
     end.setHours(23, 59, 59, 999);
 
     let completed = 0;
@@ -408,8 +362,8 @@ export class ReportGenerator {
 
     if (reportType === 'weekly') {
       // Daily granularity for weekly reports
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      const start = parseDate(startDate);
+      const end = parseDate(endDate);
       const allDates: string[] = [];
       const current = new Date(start);
 
@@ -446,8 +400,8 @@ export class ReportGenerator {
       writingFrequencyData = allDates.map(date => diaryCountsByDate.get(date) || 0);
     } else if (reportType === 'monthly') {
       // Weekly granularity for monthly reports
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      const start = parseDate(startDate);
+      const end = parseDate(endDate);
 
       // Group by week
       const weekGroups: { label: string; startDate: Date; endDate: Date }[] = [];
@@ -476,7 +430,7 @@ export class ReportGenerator {
       emotionTrendLabels = weekGroups.map(w => w.label);
       emotionTrendData = weekGroups.map(week => {
         const weekSentiments = emotionStats.emotionTrend.filter(e => {
-          const eDate = new Date(e.date);
+          const eDate = parseDate(e.date);
           return eDate >= week.startDate && eDate <= week.endDate;
         });
         return weekSentiments.length > 0
@@ -488,14 +442,14 @@ export class ReportGenerator {
       writingFrequencyLabels = weekGroups.map(w => w.label);
       writingFrequencyData = weekGroups.map(week => {
         return diaries.filter(d => {
-          const dDate = new Date(d.date);
+          const dDate = parseDate(d.date);
           return dDate >= week.startDate && dDate <= week.endDate;
         }).length;
       });
     } else {
       // Monthly granularity for yearly reports
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      const start = parseDate(startDate);
+      const end = parseDate(endDate);
 
       // Group by month
       const monthGroups: { label: string; month: number; year: number }[] = [];
@@ -514,7 +468,7 @@ export class ReportGenerator {
       emotionTrendLabels = monthGroups.map(m => m.label);
       emotionTrendData = monthGroups.map(month => {
         const monthSentiments = emotionStats.emotionTrend.filter(e => {
-          const eDate = new Date(e.date);
+          const eDate = parseDate(e.date);
           return eDate.getFullYear() === month.year && eDate.getMonth() === month.month;
         });
         return monthSentiments.length > 0
@@ -526,7 +480,7 @@ export class ReportGenerator {
       writingFrequencyLabels = monthGroups.map(m => m.label);
       writingFrequencyData = monthGroups.map(month => {
         return diaries.filter(d => {
-          const dDate = new Date(d.date);
+          const dDate = parseDate(d.date);
           return dDate.getFullYear() === month.year && dDate.getMonth() === month.month;
         }).length;
       });

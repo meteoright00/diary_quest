@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { Toaster } from '@/components/ui/sonner';
 
 type Page = 'welcome' | 'home' | 'diary' | 'pastDiaries' | 'character' | 'quests' | 'story' | 'reports' | 'settings';
 
@@ -12,7 +13,7 @@ interface LayoutProps {
 
 export default function Layout({ children, currentPage, onNavigate }: LayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-100">
+    <div className="flex h-screen bg-transparent text-gray-100">
       <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
       <div className="flex flex-col flex-1">
         <Header currentPage={currentPage} />
@@ -20,6 +21,7 @@ export default function Layout({ children, currentPage, onNavigate }: LayoutProp
           {children}
         </main>
       </div>
+      <Toaster />
     </div>
   );
 }

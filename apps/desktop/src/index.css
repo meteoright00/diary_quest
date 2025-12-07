@@ -4,26 +4,53 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
+    /* Adjusted for Dark Magical Theme */
+    --background: 224 71% 4%; /* Very deep blue */
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    
+    /* Card/Popover backgrounds - slightly lighter than bg */
+    --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+
+    /* Primary - Action Orange equivalent in HSL */
+    --primary: 25 95% 53%; /* #f97316 equivalent */
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary - Magic Cyan equivalent in HSL */
+    --secondary: 186 86% 53%; /* #22d3ee equivalent */
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 45 93% 47%; /* Gold */
+    --accent-foreground: 222 47% 11%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --radius: 0.5rem;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 186 86% 53%; /* Cyan ring */
+    
+    --radius: 0.75rem; /* Larger radius for modern feel */
+  }
+
+  /* Custom Scrollbar for Webkit */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0f172a; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b; 
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155; 
   }
 }
 
@@ -32,18 +59,28 @@
     @apply border-border;
   }
   body {
+    /* Main Gradient Background */
     @apply bg-background text-foreground;
+    background-image: linear-gradient(to bottom right, #020617, #1e1b4b);
+    background-attachment: fixed;
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   #root {
     width: 100%;
     height: 100%;
+  }
+
+  /* Custom Utility for Glass Panels */
+  .glass-panel {
+    @apply bg-slate-900/40 backdrop-blur-md border border-white/10 shadow-panel;
+  }
+
+  .glass-panel-hover {
+    @apply hover:bg-slate-800/50 hover:border-magic-cyan/50 hover:shadow-glow-cyan transition-all duration-300;
   }
 }
